@@ -2,7 +2,7 @@
 
 # Approach 1
 
-**Using app script extension:** Create an HTML form and a sample google sheet. Then using the app script extension, create a get request that stores data from the html form on the google sheet.
+**Using app script extension: Create an HTML form and a sample google sheet. Then using the app script extension, create a get request that stores data from the html form on the google sheet.
 
 Pros : fast and easy way to connect forms to google sheets
 
@@ -32,6 +32,7 @@ We can use the MySQL database to store the form responses in case google sheets 
 
 ## Approach 3 (final implemented approach)
 
+
 Created an instance of MySQL DB on AWS rbs. Then configured the MySQL instance to connect it to the HTML form using nodejs. Used the cloud database to store the form responses. Then I wrote a scripting function in google app scripts to connect a google sheet to the AWS database. Then I created 2 trigger functions in the google app scripts console. Triggers:
 
 1.  On open trigger: this trigger is fired whenever the person opens the google sheet to view the form responses. The fired trigger calls the createConnection method that copies stored data from the AWS database into the google sheet.
@@ -49,12 +50,14 @@ Solutions to TASK 1 and TASK 2(implemented) can be implemented using this approa
 
 Used google app script to create a connection between google sheets and cloud SQL server. Then send stored data from cloud SQL db to google sheets by setting up triggers. The triggers are fired when the client opens the google sheet thereby fetching all data from the cloud DB to the google sheet. I had also implemented timed triggers to automatically populate the spreadsheet by fetching data from cloud SQL that acts as a data backup in this case.
 
-**Pros**: Secure way to send data from Form to google sheets as we use an API_KEY provided by google and the person having access to API_KEY can read/write data to google sheets from the NodeJs app.
+**Pros and improvemts over approach 2**: 
 
-**Cons:** Google sheets API is called every time a user submits the form which causes a definite time delay and makes the form submission process slower. In case the google server is down it may lead to a loss of user responses as data would not get stored on 
-
-
-
+ 1. Secure way to send data from Form Form to google sheets as CLod SQL acts as data backup for recovery incase data gets deleted from google sheets
+ 2. Improved user experience as form response is immediately submitted to CLoud sql db eliminating the delay time caused during google sheets api call discussed in approach 2
+ 3. More services like SMS integration can be added in a plug-n-play fashion without causing overhaul on the backend
+ 4. Triggers have been implemented that automatically update data on google sheets as and when needed
+ 5. Form app can store upto millions of responses without crashing as records are being stored in AWS cloud instance with autoscaling feature in place
+ 
 ## SmartyPants
 
 SmartyPants converts ASCII punctuation characters into "smart" typographic punctuation HTML entities. For example:
