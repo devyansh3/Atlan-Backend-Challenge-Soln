@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>invalid records</h1>
+
+    <table border="1" width="90%">
+      <tr>
+        <th>monthly_income</th>
+        <th>monthly_savings</th>
+      </tr>
+
+      <% if(invalid.length > 0 ){ %> 
+
+         
+        <% for(var i =0 ; i< invalid.length; i++){ %>
+
+            <tr>
+                <td>
+                    <%- invalid[i].monthly_income %>
+                </td>
+                <td>
+                    <%- invalid[i].monthly_savings %>
+                </td>
+            </tr>
+
+            <% } %>
+
+
+        <% }else{ %> 
+            <h1> no invalid records not present</h1>
+            <% } %>
+    </table>
+  </body>
+</html>
