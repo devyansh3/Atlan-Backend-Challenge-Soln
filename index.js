@@ -9,7 +9,7 @@ const port = 3000
 require("dotenv").config();
 
 const accountSid = 'ACd3ba9fb9061a43f22deb015ba4f95370'; 
-const authToken = '87c77e960027b9989cb77482cf9b47a3'; 
+const authToken = '65a93378076b6e1e4f312e1e53daff47'; 
 const twclient = require('twilio')(accountSid, authToken); 
 
 
