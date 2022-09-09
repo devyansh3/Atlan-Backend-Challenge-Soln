@@ -8,7 +8,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const accountSid = 'ACd3ba9fb9061a43f22deb015ba4f95370'; 
-const authToken = '87c77e960027b9989cb77482cf9b47a3'; 
+const authToken = '65a93378076b6e1e4f312e1e53daff47'; 
 const twclient = require('twilio')(accountSid, authToken); 
 
 app.set('view engine', 'ejs')
@@ -17,7 +17,7 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/register.html");
 });
 
-//route to get invalid records if any
+//route to get invalid records if anygtffv
 app.get("/validate", function(req, res){
   conn.connect(function(err){
     if(err) throw err;
