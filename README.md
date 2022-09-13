@@ -56,8 +56,7 @@ The solution to task 2 has been implemented by writing an SQL query that display
 Displaying invalid records (monthly income < monthly savings) so the admin can correct the values in Cloud SQL:
 
 
-**Pros and improvemts over approach 2**: 
-Pros and improvements over approach 2: 
+
 
 Secure way to send data from Form Form to google sheets as CLod SQL acts as data backup for recovery in case data gets deleted from google sheets
  Improved user experience as form response is immediately submitted to CLoud sql db eliminating the delay time caused during google sheets api call discussed in approach 2
