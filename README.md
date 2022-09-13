@@ -6,20 +6,18 @@
 
 Pros : fast and easy way to connect forms to google sheets
 
-Cons: it is not secure and is highly dependent on google sheets API. it also not very scalable to a large user base and it is very difficult to add on new services to form like an sms confirmation on form submission etc since there is no use of middlewares to connect the client side form to the database(in this case google sheets)
+Cons:  it is not secure and is highly dependent on google sheets API. it is also not very scalable to a large user base and it is very difficult to add on new services to the form like an sms confirmation on form submission etc since there is no use of middlewares to connect the client side form to the database(in this case google sheets)
 
 
 # **Approach 2**
 
-**Creating APIs in Nodejs to communicate with google sheets API:** created a service account on GCP. Created a service API key that gave a dummy email address with which the google sheets can be shared. That dummy email has read and write permissions to edit the google sheet. With this functionality, our nodeJs app gets full auth to read and write data to the google sheets using that dummy email address as a proxy. Added all the API key credentials to the nodejs project.
+**Creating APIs in Nodejs to communicate with google sheets API:**  created a service account on GCP. Created a service API key that gave a dummy email address with which the google sheets can be shared. That dummy email has read and write permissions to edit the google sheet. With this functionality, our nodeJs app gets full auth to read and write data to google sheets using that dummy email address as a proxy. Added all the API key credentials to the nodejs project.
+In the nodejs project created a client object and got the metadata about the spreadsheet and stored it in a variable “metadata” by making a get request on the google spreadsheet API. Passed the spreadsheet from URL as a parameter to the get request to the metadata
 
-In the nodejs project created a client object and got the metadata about the spreadsheet and stored it in a variable “metadata” by making a get request on the google spreadsheet api. Passed the spreadsheet from URL as a parameter to the get request to the metadata
-
-I was able to get the properties of the spreadsheet like title, column name, row count, column count, etc
-
-Then I created a post request function that takes multiple responses from the form in an array and stores multiple responses simultaneously to the google sheet
-
+Was able to get the properties of the spreadsheet-like title, column name, row count, column count, etc 
+Created a post request function that takes multiple responses from the form in an array and stores multiple responses simultaneously to the google sheet 
 For designing the form, I used ejs as a view engine to fill up the rows of the google sheet.
+
 
 **Addition of SMS service to the form:** Added Twilio SMS service to the same post request that sends a confirmation message to the user upon filing up the form with SMS body containing the user details as specified in task 4 to the user’s phone number
 
