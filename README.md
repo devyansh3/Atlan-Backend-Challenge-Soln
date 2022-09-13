@@ -21,87 +21,54 @@ For designing the form, I used ejs as a view engine to fill up the rows of the g
 
 **Addition of SMS service to the form:** Added Twilio SMS service to the same post request that sends a confirmation message to the user upon filing up the form with SMS body containing the user details as specified in task 4 to the user’s phone number
 
-**Pros:** Secure way to send data from Form to google sheets as we use an API_KEY provided by google and the person having access to API_KEY can read/write data to google sheets from the NodeJs app. It is scalable to a large user base as we call the google sheets API to append the data to sheets in an efficient way. More add-on services like SMS confirmation can be added on form submission since we are using middlewares (expressJs) to communicate between the Nodejs app and the Google sheets
+**Pros:**  Secure way to send data from Form to google sheets as we use an API_KEY provided by google and the person having access to API_KEY can read/write data to google sheets from the NodeJs app. 
+It is scalable to a large user base as we call the google sheets API to append the data to sheets in an efficient way. More add-on services like SMS confirmation can be added on form submission since we are using middlewares (expressJs) to communicate between the Nodejs app and the Google sheets
+
+
 
 **Cons:** Google sheets API is called every time a user submits the form which causes a definite time delay and makes the form submission process slower. In case the google server is down it may lead to a loss of user responses as data would not get stored on the google sheets.
+As the Google Sheets API is a shared service, there are applied quotas and limitations to make sure it's used fairly by all users and to protect the overall health of the Google Workspace system.
+If we exceed a quota, we generally receive a 429: Too many requests HTTP status code response. If this happens, we should use an exponential backoff algorithm and try again later. 
 
 **Solution:**
-We can use the MySQL database to store the form responses in case google sheets API stops responding or the server goes down. In that case, we can store the response in a MySQL table and update the google sheets by exporting the data from MySQL when the server is up and running.
+To tackle the issue of server outage we can make use of the message queueing protocol (RabbitMQ) which will give our form responses a safe place to live until they are stored on the google sheet. We can also use the MySQL database to store the form responses in case google sheets API stops responding or the server goes down. In that case, we can store the response in a MySQL table and update the google sheets by exporting the data from MySQL when the server is up and running.
 
 ## Approach 3 (final implemented approach)
 
 
-Created an instance of MySQL DB on AWS rbs. Then configured the MySQL instance to connect it to the HTML form using nodejs. Used the cloud database to store the form responses. Then I wrote a scripting function in google app scripts to connect a google sheet to the AWS database. Then I created 2 trigger functions in the google app scripts console. Triggers:
+Created an instance of MySQL DB on AWS rbs. Then configured the MySQL instance to connect it to the HTML form using nodejs. Used the cloud database to store the form responses. Used google app script to create a connection between google sheets and cloud SQL server. Then send stored data from cloud SQL DB to google sheets by setting up triggers. The triggers are fired when the client opens the google sheet thereby fetching all data from the cloud DB to the google sheet. I had also implemented timed triggers to automatically populate the spreadsheet by fetching data from cloud SQL that acts as a data backup in this case.
 
-1.  On open trigger: this trigger is fired whenever the person opens the google sheet to view the form responses. The fired trigger calls the createConnection method that copies stored data from the AWS database into the google sheet.
-    
-2.  Timed trigger: In case the google sheet is not opened then the timed trigger will be fired after the time for which the form was active elapses(similar to google forms) and the timed trigger calls the createConnection method that copies form response and questions from the AWS database and stores it into the google sheet in the desired manner.
+Then I wrote a scripting function in google app scripts to connect a google sheet to the AWS database. Then I created 2 trigger functions in the google app scripts console. Triggers:
+On open trigger: this trigger is fired whenever the person opens the google sheet to view the form responses. The fired trigger calls the createConnection method that copies stored data from the AWS database into the google sheet.
+Timed trigger: In case the google sheet is not opened then the timed trigger will be fired after the time for which the form was active elapses(similar to google forms) and the timed trigger calls the createConnection method that copies form response and questions from the AWS database and stores it into the google sheet in the desired manner.
+
+
+The AWS database acts as a Backup data recovery platform in case the google sheets API stops responding or responses are not recorded on the google sheets due to a server outage, We have a record of all the form responses in the MySQL cloud DB.
+Also if any modifications are done to the data in the MySQL db, they are automatically reflected in the google sheet due to the active triggers in place.
+SMS use case: This approach can be used to add more services like an SMS confirmation to the user on form submission in a Plug-and-play fashion. I used the Twilio SMS gateway service as used in approach 2 to send an SMS to the user upon form submission with the SMS body comprising of the details of the user (TASK 4).
     
 
 The AWS database acts as a Backup data recovery platform in case the google sheets API stops responding or responses are not recorded on the google sheets due to a server outage, We have a record of all the form responses in the MySQL cloud DB.
 
 Also if any modifications are done to the data in the MySQL db, they are automatically reflected in the google sheet due to the active triggers in place.
 
-SMS use case: This approach can be used to add more services like an SMS confirmation to the user on form submission in a Plug-and-play fashion. I used the Twilio SMS gateway service as used in approach 2 to send an SMS to the user upon form submission with the SMS body comprising of the details of the user (TASK 4).
+The solution to task 2 has been implemented by writing an SQL query that displays invalid records(monthly savings > monthly income) if any. The data collector can view these records and edit these in the Cloud SQL DB.
+Displaying invalid records (monthly income < monthly savings) so the admin can correct the values in Cloud SQL:
 
-Solutions to TASK 1 and TASK 2(implemented) can be implemented using this approach by writing SQL queries since we have all the responses in the MySQL database
-
-Used google app script to create a connection between google sheets and cloud SQL server. Then send stored data from cloud SQL db to google sheets by setting up triggers. The triggers are fired when the client opens the google sheet thereby fetching all data from the cloud DB to the google sheet. I had also implemented timed triggers to automatically populate the spreadsheet by fetching data from cloud SQL that acts as a data backup in this case.
 
 **Pros and improvemts over approach 2**: 
+Pros and improvements over approach 2: 
 
- 1. Secure way to send data from Form Form to google sheets as CLod SQL acts as data backup for recovery incase data gets deleted from google sheets
- 2. Improved user experience as form response is immediately submitted to CLoud sql db eliminating the delay time caused during google sheets api call discussed in approach 2
- 3. More services like SMS integration can be added in a plug-n-play fashion without causing overhaul on the backend
- 4. Triggers have been implemented that automatically update data on google sheets as and when needed
- 5. Form app can store upto millions of responses without crashing as records are being stored in AWS cloud instance with autoscaling feature in place
- 
-## SmartyPants
+Secure way to send data from Form Form to google sheets as CLod SQL acts as data backup for recovery in case data gets deleted from google sheets
+ Improved user experience as form response is immediately submitted to CLoud sql db eliminating the delay time caused during google sheets api call discussed in approach 2
+ More services like SMS integration can be added in a plug-n-play fashion without causing an overhaul on the backend
+ Triggers have been implemented that automatically update data on google sheets as and when needed
+ Form app can store up to millions of responses without crashing as records are being stored in AWS cloud instance with autoscaling feature in place
+approach 2
 
-SmartyPants converts ASCII punctuation characters into "smart" typographic punctuation HTML entities. For example:
+Cons:
+ Google sheets API is called when the trigger is fired to copy the data from cloud DB to google sheets. 
+As the Google Sheets API is a shared service, there are applied quotas and limitations to make sure it's used fairly by all users and to protect the overall health of the Google Workspace system.
+If we exceed a quota, we generally receive a 429: Too many requests HTTP status code response. If this happens, we should use an exponential backoff algorithm and try again later. 
 
-|                |ASCII                          |HTML                         |
-|----------------|-------------------------------|-----------------------------|
-|Single backticks|`'Isn't this fun?'`            |'Isn't this fun?'            |
-|Quotes          |`"Isn't this fun?"`            |"Isn't this fun?"            |
-|Dashes          |`-- is en-dash, --- is em-dash`|-- is en-dash, --- is em-dash|
-
-
-## KaTeX
-
-You can render LaTeX mathematical expressions using [KaTeX](https://khan.github.io/KaTeX/):
-
-The *Gamma function* satisfying $\Gamma(n) = (n-1)!\quad\forall n\in\mathbb N$ is via the Euler integral
-
-$$
-\Gamma(z) = \int_0^\infty t^{z-1}e^{-t}dt\,.
-$$
-
-> You can find more information about **LaTeX** mathematical expressions [here](http://meta.math.stackexchange.com/questions/5020/mathjax-basic-tutorial-and-quick-reference).
-
-
-## UML diagrams
-
-You can render UML diagrams using [Mermaid](https://mermaidjs.github.io/). For example, this will produce a sequence diagram:
-
-```mermaid
-sequenceDiagram
-Alice ->> Bob: Hello Bob, how are you?
-Bob-->>John: How about you John?
-Bob--x Alice: I am good thanks!
-Bob-x John: I am good thanks!
-Note right of John: Bob thinks a long<br/>long time, so long<br/>that the text does<br/>not fit on a row.
-
-Bob-->Alice: Checking with John...
-Alice->John: Yes... John, how are you?
-```
-
-And this will produce a flow chart:
-
-```mermaid
-graph LR
-A[Square Rect] -- Link text --> B((Circle))
-A --> C(Round Rect)
-B --> D{Rhombus}
-C --> D
-```
+Additional email use case: send an email conformation after filling out the form using an email gateway service, the email contains the data that the user filled out like in SMS
